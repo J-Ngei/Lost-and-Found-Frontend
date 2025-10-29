@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react';
+import type { ChangeEvent } from 'react';
 import { Upload, X } from 'lucide-react';
 import type { FormData } from '../types';
 

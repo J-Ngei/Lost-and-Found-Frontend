@@ -1,4 +1,3 @@
-import React from 'react';
 import { Search } from 'lucide-react';
 import type { View } from '../types';
 
