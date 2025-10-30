@@ -11,8 +11,8 @@ export default function Header({ view, setView }: Props) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-center space-x-3">
-            <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-3 rounded-xl">
-              <img src="/favicon.png" alt="Logo" className="w-6 h-6" />
+            <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-2.5 md:p-3 rounded-xl">
+              <img src="/favicon.png" alt="Logo" className="w-7 h-7" />
             </div>
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
