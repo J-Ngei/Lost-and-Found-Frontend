@@ -17,6 +17,7 @@ export default function LostFoundHub() {
   const [filter, setFilter] = useState<Filter>({ type: 'all', category: 'all' });
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [onlyActive, setOnlyActive] = useState<boolean>(false);
   const [formData, setFormData] = useState<FormData>({
     type: 'lost',
     category: '',
@@ -89,7 +90,8 @@ export default function LostFoundHub() {
       item.title.toLowerCase().includes(q) ||
       item.description.toLowerCase().includes(q) ||
       item.location.toLowerCase().includes(q);
-    return matchesType && matchesCategory && matchesSearch;
+    const matchesStatus = !onlyActive || item.status === 'active';
+    return matchesType && matchesCategory && matchesSearch && matchesStatus;
   });
 
   const handleSubmit = () => {
@@ -146,11 +148,25 @@ export default function LostFoundHub() {
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
               filter={filter}
-              setFilter={setFilter}
+              setFilter={(f) => {
+                setOnlyActive(false);
+                setFilter(f);
+              }}
               categories={CATEGORIES}
             />
 
-            <StatsCards items={items} />
+            <StatsCards
+              items={items}
+              onSelect={(key) => {
+                if (key === 'active') {
+                  setOnlyActive(true);
+                  setFilter((prev) => ({ ...prev, type: 'all' }));
+                } else {
+                  setOnlyActive(false);
+                  setFilter((prev) => ({ ...prev, type: key }));
+                }
+              }}
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredItems.map((item) => (
