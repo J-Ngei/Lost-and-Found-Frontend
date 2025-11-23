@@ -173,7 +173,7 @@ export default function LostFoundHub() {
     return matchesType && matchesCategory && matchesSearch && matchesStatus;
   });
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!user) {
       setPendingPost(true);
       setShowAuth(true);
@@ -195,46 +195,61 @@ export default function LostFoundHub() {
     if (formData.reward) body.append('reward', formData.reward);
     if (formData.imageFile) body.append('image', formData.imageFile);
 
-    fetch(api('/api/items'), { 
-      method: 'POST', 
-      body, 
-      headers: { 
-        'Authorization': `Bearer ${user.apiKey}`,
-        // Don't set Content-Type header - let the browser set it with the correct boundary
-      },
-    })
-      .then(async (response) => {
-        const json = await response.json();
-        if (!response.ok) {
-          throw new Error(json.error || 'Failed to post item');
-        }
-        return json;
-      })
-      .then((json) => {
-        if (json?.success && json?.data) {
-          const saved = { ...(json.data as any), id: json.data._id } as Item;
-          setItems(prevItems => [saved, ...prevItems]);
-          setFormData({
-            type: 'lost',
-            category: '',
-            title: '',
-            description: '',
-            date: new Date().toISOString().split('T')[0],
-            location: '',
-            contact: '',
-            reward: '',
-            image: null,
-            imageFile: null,
-          });
-          setView('browse');
-        } else {
-          throw new Error(json?.error || 'Failed to post item');
-        }
-      })
-      .catch((error) => {
-        console.error('Error posting item:', error);
-        alert(error.message || 'Failed to post item. Please check the console for more details.');
+    console.log('Sending request to:', api('/api/items'));
+    console.log('With headers:', { Authorization: `Bearer ${user.apiKey?.substring(0, 10)}...` });
+    
+    try {
+      const response = await fetch(api('/api/items'), { 
+        method: 'POST', 
+        body, 
+        headers: { 
+          'Authorization': `Bearer ${user.apiKey}`,
+        },
       });
+      
+      const responseText = await response.text();
+      console.log('Raw response:', responseText);
+      
+      let json;
+      try {
+        json = responseText ? JSON.parse(responseText) : {};
+      } catch (e) {
+        console.error('Failed to parse JSON response:', e);
+        throw new Error('Server returned an invalid response. Please check the console for details.');
+      }
+      
+      if (!response.ok) {
+        throw new Error(json.error || `Server returned ${response.status} ${response.statusText}`);
+      }
+      
+      if (json?.success && json?.data) {
+        const saved = { ...(json.data as any), id: json.data._id } as Item;
+        setItems(prevItems => [saved, ...prevItems]);
+        setFormData({
+          type: 'lost',
+          category: '',
+          title: '',
+          description: '',
+          date: new Date().toISOString().split('T')[0],
+          location: '',
+          contact: '',
+          reward: '',
+          image: null,
+          imageFile: null,
+        });
+        setView('browse');
+      } else {
+        throw new Error(json?.error || 'Failed to post item');
+      }
+    } catch (error) {
+      console.error('Error in handleSubmit:', error);
+      if (error instanceof Error) {
+        alert(`Error: ${error.message || 'Failed to post item. Check console for details.'}`);
+      } else {
+        alert('An unknown error occurred. Please check the console for details.');
+      }
+      throw error;
+    }
 
   };
 
