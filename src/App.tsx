@@ -195,12 +195,25 @@ export default function LostFoundHub() {
     if (formData.reward) body.append('reward', formData.reward);
     if (formData.imageFile) body.append('image', formData.imageFile);
 
-    fetch(api('/api/items'), { method: 'POST', body, headers: { Authorization: `Bearer ${user.apiKey}` } })
-      .then((r) => r.json())
+    fetch(api('/api/items'), { 
+      method: 'POST', 
+      body, 
+      headers: { 
+        'Authorization': `Bearer ${user.apiKey}`,
+        // Don't set Content-Type header - let the browser set it with the correct boundary
+      },
+    })
+      .then(async (response) => {
+        const json = await response.json();
+        if (!response.ok) {
+          throw new Error(json.error || 'Failed to post item');
+        }
+        return json;
+      })
       .then((json) => {
         if (json?.success && json?.data) {
           const saved = { ...(json.data as any), id: json.data._id } as Item;
-          setItems([saved, ...items]);
+          setItems(prevItems => [saved, ...prevItems]);
           setFormData({
             type: 'lost',
             category: '',
@@ -215,11 +228,13 @@ export default function LostFoundHub() {
           });
           setView('browse');
         } else {
-          alert('Failed to post item');
+          throw new Error(json?.error || 'Failed to post item');
         }
       })
-      .catch(() => alert('Failed to post item'));
-  };
+      .catch((error) => {
+        console.error('Error posting item:', error);
+        alert(error.message || 'Failed to post item. Please check the console for more details.');
+      });
 
   const setViewGuard = (v: View) => {
     if (v === 'post' && !user) {
