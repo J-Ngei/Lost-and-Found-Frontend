@@ -1,15 +1,15 @@
 import type { ChangeEvent } from 'react';
 import { Upload, X } from 'lucide-react';
-import type { FormData } from '../types';
+import type { FormData as FormDataType } from '../types';
 
-type Props = {
-  formData: FormData;
-  setFormData: (f: FormData) => void;
+interface PostFormProps {
+  formData: FormDataType;
+  setFormData: (data: FormDataType) => void;
   categories: string[];
   onSubmit: () => void;
-};
+}
 
-export default function PostForm({ formData, setFormData, categories, onSubmit }: Props) {
+export default function PostForm({ formData, setFormData, categories, onSubmit }: PostFormProps) {
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -27,11 +27,11 @@ export default function PostForm({ formData, setFormData, categories, onSubmit }
       
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData(prev => ({ 
-          ...prev, 
-          image: reader.result as string, 
-          imageFile: file 
-        }));
+        setFormData((prev: FormDataType) => ({
+        ...prev,
+        image: reader.result as string,
+        imageFile: file
+      }));
       };
       reader.onerror = () => {
         console.error('Error reading file');
