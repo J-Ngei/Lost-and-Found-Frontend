@@ -1,6 +1,5 @@
 import { Suspense, lazy, useEffect, useState, useCallback } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
-import { AlertCircle } from 'lucide-react';
 import { categories as CATEGORIES } from './constants';
 import type { Filter, FormData, Item, View, User } from './types';
 

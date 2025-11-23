@@ -10,8 +10,7 @@ const Header = memo(({ view, setView, user, onSignIn, onSignOut, onRotateKey }: 
   onSignOut?: () => void;
   onRotateKey?: () => void;
 }) => {
-  // Preload user avatar if available
-  const userInitial = user?.name?.[0] || user?.email?.[0] || '?';
+  // User avatar initialization removed as it wasn't being used
   
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
