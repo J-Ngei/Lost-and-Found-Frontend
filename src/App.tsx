@@ -236,6 +236,8 @@ export default function LostFoundHub() {
         alert(error.message || 'Failed to post item. Please check the console for more details.');
       });
 
+  };
+
   const setViewGuard = (v: View) => {
     if (v === 'post' && !user) {
       setPendingPost(true);
