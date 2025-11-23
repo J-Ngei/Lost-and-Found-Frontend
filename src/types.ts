@@ -10,6 +10,9 @@ export type Item = {
   contact: string;
   status: 'active' | 'resolved' | 'inactive' | string;
   reward?: string;
+  ownerId?: string;
+  ownerName?: string;
+  ownerEmail?: string;
 };
 
 export type Filter = {
@@ -30,4 +33,11 @@ export type FormData = {
   reward?: string;
   image: string | null; // data URL preview or server URL
   imageFile?: File | null; // original file for upload
+};
+
+export type User = {
+  userId: string;
+  name: string;
+  email: string;
+  apiKey: string;
 };

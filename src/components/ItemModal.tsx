@@ -8,9 +8,10 @@ type Props = {
   onClose: () => void;
   onResolve: () => void;
   onDelete: () => void;
+  canManage?: boolean;
 };
 
-export default function ItemModal({ item, onClose, onResolve, onDelete }: Props) {
+export default function ItemModal({ item, onClose, onResolve, onDelete, canManage = false }: Props) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={onClose}>
       <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
@@ -71,22 +72,25 @@ export default function ItemModal({ item, onClose, onResolve, onDelete }: Props)
             </div>
           </div>
 
-          <div className="flex gap-3 justify-end">
-            <button
-              onClick={onResolve}
-              className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700"
-            >
-              Mark as Resolved
-            </button>
-            <button
-              onClick={onDelete}
-              className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
-            >
-              Delete
-            </button>
-          </div>
+          {canManage && (
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={onResolve}
+                className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700"
+              >
+                Mark as Resolved
+              </button>
+              <button
+                onClick={onDelete}
+                className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
+

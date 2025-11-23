@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Sitemap: https://lostandfoundke.com/sitemap.xml
+
+# Block API and admin paths
+Disallow: /api/
+Disallow: /admin/
+Disallow: /private/
