@@ -4,7 +4,7 @@ import type { FormData as FormDataType } from '../types';
 
 interface PostFormProps {
   formData: FormDataType;
-  setFormData: (data: FormDataType) => void;
+  setFormData: (data: FormDataType | ((prev: FormDataType) => FormDataType)) => void;
   categories: string[];
   onSubmit: () => void;
 }
