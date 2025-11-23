@@ -13,9 +13,29 @@ export default function PostForm({ formData, setFormData, categories, onSubmit }
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file type
+      if (!file.type.match('image/.*')) {
+        alert('Please upload an image file (JPEG, PNG, etc.)');
+        return;
+      }
+      
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size should be less than 5MB');
+        return;
+      }
+      
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData({ ...formData, image: reader.result as string, imageFile: file });
+        setFormData(prev => ({ 
+          ...prev, 
+          image: reader.result as string, 
+          imageFile: file 
+        }));
+      };
+      reader.onerror = () => {
+        console.error('Error reading file');
+        alert('Error reading the image file. Please try again.');
       };
       reader.readAsDataURL(file);
     }
