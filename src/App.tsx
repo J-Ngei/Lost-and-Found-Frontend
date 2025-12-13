@@ -109,7 +109,7 @@ export default function LostFoundHub() {
   const [user, setUser] = useState<User | null>(null);
   const [showAuth, setShowAuth] = useState(false);
   const [pendingPost, setPendingPost] = useState(false);
-  const [formData] = useState<FormData>({
+  const [formData, setFormData] = useState<FormData>({
     type: 'lost',
     category: '',
     title: '',
