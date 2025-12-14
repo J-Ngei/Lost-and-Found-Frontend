@@ -1,5 +1,7 @@
 import { Suspense, lazy, useEffect, useState, useCallback } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
+import { categories } from './constants';
+
 // Categories are now imported where needed
 // Define types at the top of the file
 interface User {
@@ -58,7 +60,6 @@ const lazyWithPreload = (importFn: () => Promise<any>) => {
 };
 
 const Header = lazyWithPreload(() => import('./components/Header'));
-const FiltersBar = lazyWithPreload(() => import('./components/FiltersBar'));
 const StatsCards = lazyWithPreload(() => import('./components/StatsCards'));
 const ItemCard = lazyWithPreload(() => import('./components/ItemCard'));
 const ItemModal = lazyWithPreload(() => import('./components/ItemModal'));
@@ -67,17 +68,10 @@ const AuthModal = lazyWithPreload(() => import('./components/AuthModal'));
 
 // Preload components on user interaction
 const preloadComponents = () => {
-  [Header, FiltersBar, StatsCards, ItemCard, ItemModal, PostForm, AuthModal].forEach(
+  [Header, StatsCards, ItemCard, ItemModal, PostForm, AuthModal].forEach(
     (component: any) => component.preload?.()
   );
 };
-
-// Preload components on mount and interaction
-useEffect(() => {
-  // Preload components after initial render
-  const timer = setTimeout(preloadComponents, 2000);
-  return () => clearTimeout(timer);
-}, []);
 
 // Utility function to handle API paths
 function api(path: string): string {
@@ -140,6 +134,12 @@ export default function LostFoundHub() {
         if (parsed?.apiKey && parsed?.userId) setUser(parsed);
       }
     } catch {}
+  }, []);
+
+  // Preload components after initial render
+  useEffect(() => {
+    const timer = setTimeout(preloadComponents, 2000);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleResolve = async (id: string | number) => {
@@ -227,9 +227,6 @@ export default function LostFoundHub() {
     }
   };
 
-  // Sample categories - you might want to fetch these from your backend
-  const categories = ['Electronics', 'Documents', 'Clothing', 'Accessories', 'Other'];
-
   return (
     <ErrorBoundary
       FallbackComponent={ErrorFallback}
@@ -249,17 +246,19 @@ export default function LostFoundHub() {
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {view === 'browse' && (
-            <>
-              <Suspense fallback={<div className="h-24"></div>}>
-                <FiltersBar
-                  searchTerm={searchTerm}
-                  setSearchTerm={setSearchTerm}
-                  filter={filter}
-                  setFilter={setFilter}
-                  categories={categories}
+            <div className="mt-8">
+              <Suspense fallback={<div>Loading stats...</div>}>
+                <StatsCards 
+                  items={items} 
+                  onSelect={(type) => {
+                    if (type === 'active') {
+                      setFilter(prev => ({ ...prev, type: 'all' }));
+                    } else {
+                      setFilter(prev => ({ ...prev, type }));
+                    }
+                  }} 
                 />
               </Suspense>
-            <div className="mt-8">
               <h2 className="text-2xl font-bold mb-4">Browse Items</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {items
@@ -289,128 +288,21 @@ export default function LostFoundHub() {
                   ))}
               </div>
             </div>
-            </>
           )}
           
           {view === 'post' && (
-            <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
-              <h2 className="text-2xl font-bold mb-6">Post a New Item</h2>
-              <form className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Item Type</label>
-                  <select
-                    value={formData.type}
-                    onChange={(e) => setFormData({...formData, type: e.target.value as 'lost' | 'found'})}
-                    className="w-full p-2 border rounded"
-                  >
-                    <option value="lost">Lost Item</option>
-                    <option value="found">Found Item</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({...formData, category: e.target.value})}
-                    className="w-full p-2 border rounded"
-                    required
-                  >
-                    <option value="">Select a category</option>
-                    {categories.map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) => setFormData({...formData, title: e.target.value})}
-                    className="w-full p-2 border rounded"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({...formData, description: e.target.value})}
-                    className="w-full p-2 border rounded"
-                    rows={3}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-                  <input
-                    type="text"
-                    value={formData.location}
-                    onChange={(e) => setFormData({...formData, location: e.target.value})}
-                    className="w-full p-2 border rounded"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                  <input
-                    type="date"
-                    value={formData.date}
-                    onChange={(e) => setFormData({...formData, date: e.target.value})}
-                    className="w-full p-2 border rounded"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Contact Information</label>
-                  <input
-                    type="text"
-                    value={formData.contact}
-                    onChange={(e) => setFormData({...formData, contact: e.target.value})}
-                    className="w-full p-2 border rounded"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Reward (optional)</label>
-                  <input
-                    type="text"
-                    value={formData.reward}
-                    onChange={(e) => setFormData({...formData, reward: e.target.value})}
-                    className="w-full p-2 border rounded"
-                    placeholder="e.g., $50, Gift Card, etc."
-                  />
-                </div>
-
-                <div className="flex items-center justify-between pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setView('browse')}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      // Handle form submission here
-                      alert('Form submission would happen here');
-                    }}
-                  >
-                    Post Item
-                  </button>
-                </div>
-              </form>
-            </div>
+            <Suspense fallback={<div>Loading form...</div>}>
+              <PostForm
+                formData={formData}
+                setFormData={setFormData}
+                categories={categories}
+                onSubmit={() => {
+                  // Handle form submission
+                  console.log('Form submitted:', formData);
+                  // Add your form submission logic here
+                }}
+              />
+            </Suspense>
           )}
         </main>
 
