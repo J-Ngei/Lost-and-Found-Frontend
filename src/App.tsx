@@ -98,7 +98,7 @@ export default function LostFoundHub() {
   const [items, setItems] = useState<Item[]>([]);
   const [view, setView] = useState<View>('browse');
   const [filter, setFilter] = useState<Filter>({ type: 'all', category: 'all' });
-  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [searchTerm] = useState<string>('');
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [showAuth, setShowAuth] = useState(false);
@@ -250,7 +250,7 @@ export default function LostFoundHub() {
               <Suspense fallback={<div>Loading stats...</div>}>
                 <StatsCards 
                   items={items} 
-                  onSelect={(type) => {
+                  onSelect={(type: 'active' | 'lost' | 'found') => {
                     if (type === 'active') {
                       setFilter(prev => ({ ...prev, type: 'all' }));
                     } else {
