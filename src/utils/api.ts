@@ -1,14 +1,22 @@
-// Ensure we don't have double slashes or duplicate /api in URLs
-const cleanBase = (import.meta.env.VITE_API_BASE || '').replace(/\/+$/, '');
-export const API_BASE = cleanBase;
+// Get the base URL from environment variable
+const API_BASE = import.meta.env.VITE_API_BASE || '';
 
 export const api = (path: string) => {
-  // Remove leading slashes from path to prevent double slashes
-  const cleanPath = path.replace(/^\/+/, '');
-  // If API_BASE is empty, just return the path
-  if (!API_BASE) return `/${cleanPath}`;
-  // Otherwise, combine them with a single slash
-  return `${API_BASE}/${cleanPath}`;
+  // Remove leading/trailing slashes from path and base URL
+  const cleanBase = API_BASE.replace(/\/+$/, '');
+  const cleanPath = path.replace(/^\/+|\/+$/g, '');
+  
+  // If no base URL is set, just return the path with leading slash
+  if (!cleanBase) return `/${cleanPath}`;
+  
+  // If path already starts with http, return as is (absolute URL)
+  if (/^https?:\/\//i.test(path)) return path;
+  
+  // If path already starts with the base URL, return as is
+  if (path.startsWith(cleanBase)) return path;
+  
+  // Otherwise, combine base URL and path with a single slash
+  return `${cleanBase}/${cleanPath}`;
 };
 
 export const fileUrl = (path?: string | null) => {

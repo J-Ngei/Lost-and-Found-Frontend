@@ -123,19 +123,36 @@ export default function LostFoundHub() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(api('/api/items'));
+      const apiUrl = api('/items');
+      console.log('Fetching items from:', apiUrl);
+      
+      const response = await fetch(apiUrl, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(user?.apiKey ? { 'Authorization': `Bearer ${user.apiKey}` } : {})
+        }
+      });
+      
       if (!response.ok) {
-        throw new Error('Failed to fetch items');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('API Error:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData
+        });
+        throw new Error(errorData.message || 'Failed to fetch items');
       }
+      
       const data = await response.json();
-      setItems(data.data || []);
+      console.log('Fetched items:', data);
+      setItems(Array.isArray(data) ? data : (data.data || []));
     } catch (err) {
       console.error('Error fetching items:', err);
-      setError('Failed to load items. Please try again later.');
+      setError(err instanceof Error ? err.message : 'Failed to load items. Please try again later.');
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [user?.apiKey]);
 
   useEffect(() => {
     fetchItems();
