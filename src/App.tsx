@@ -216,7 +216,7 @@ export default function LostFoundHub() {
         formDataToSend.append('image', formData.imageFile);
       }
 
-      const response = await fetch(api('/api/items'), {
+      const response = await fetch(api('/items'), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${user.apiKey}`,
