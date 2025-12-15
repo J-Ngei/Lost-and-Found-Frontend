@@ -115,6 +115,7 @@ export default function LostFoundHub() {
     image: null,
     imageFile: null,
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch items from backend on mount
   const fetchItems = useCallback(async () => {
@@ -167,6 +168,84 @@ export default function LostFoundHub() {
     } catch (error) {
       console.error('Error resolving item:', error);
       alert('Failed to resolve item. Please try again.');
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Check if user is authenticated
+    if (!user) {
+      setPendingPost(true);
+      setShowAuth(true);
+      return;
+    }
+
+    // Validate required fields
+    if (!formData.category || !formData.title || !formData.description || !formData.location || !formData.contact) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('type', formData.type);
+      formDataToSend.append('category', formData.category);
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('date', formData.date);
+      formDataToSend.append('location', formData.location);
+      formDataToSend.append('contact', formData.contact);
+      if (formData.reward) {
+        formDataToSend.append('reward', formData.reward);
+      }
+      if (formData.imageFile) {
+        formDataToSend.append('image', formData.imageFile);
+      }
+
+      const response = await fetch(api('/api/items'), {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${user.apiKey}`,
+        },
+        body: formDataToSend,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to post item');
+      }
+
+      const newItem = await response.json();
+      
+      // Update the items list
+      setItems(prevItems => [newItem.data, ...prevItems]);
+      
+      // Reset form
+      setFormData({
+        type: 'lost',
+        category: '',
+        title: '',
+        description: '',
+        date: new Date().toISOString().split('T')[0],
+        location: '',
+        contact: '',
+        reward: '',
+        image: null,
+        imageFile: null,
+      });
+      
+      // Switch to browse view
+      setView('browse');
+      
+      alert('Item posted successfully!');
+    } catch (error) {
+      console.error('Error posting item:', error);
+      alert(error.message || 'Failed to post item. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -296,11 +375,7 @@ export default function LostFoundHub() {
                 formData={formData}
                 setFormData={setFormData}
                 categories={categories}
-                onSubmit={() => {
-                  // Handle form submission
-                  console.log('Form submitted:', formData);
-                  // Add your form submission logic here
-                }}
+                onSubmit={handleSubmit}
               />
             </Suspense>
           )}
