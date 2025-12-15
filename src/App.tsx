@@ -115,7 +115,7 @@ export default function LostFoundHub() {
     image: null,
     imageFile: null,
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Removed unused isSubmitting state since it's not used in the UI
 
   // Fetch items from backend on mount
   const fetchItems = useCallback(async () => {
@@ -187,8 +187,6 @@ export default function LostFoundHub() {
       return;
     }
 
-    setIsSubmitting(true);
-    
     try {
       const formDataToSend = new FormData();
       formDataToSend.append('type', formData.type);
@@ -243,9 +241,8 @@ export default function LostFoundHub() {
       alert('Item posted successfully!');
     } catch (error) {
       console.error('Error posting item:', error);
-      alert(error.message || 'Failed to post item. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to post item. Please try again.';
+      alert(errorMessage);
     }
   };
 
