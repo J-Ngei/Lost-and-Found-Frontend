@@ -415,7 +415,7 @@ export default function LostFoundHub() {
                 </div>
               )}
             </div>
-          )
+          )}
           {view === 'post' && (
             <Suspense fallback={<div>Loading form...</div>}>
               <PostForm
@@ -425,9 +425,12 @@ export default function LostFoundHub() {
                 onSubmit={handleSubmit}
               />
             </Suspense>
-          )
-          }
+          )}
         </main>
+        {selectedItem && (
+          <Suspense fallback={null}>
+            <ItemModal
+              item={selectedItem}
               onClose={() => setSelectedItem(null)}
               onResolve={() => handleResolve(selectedItem._id)}
               onDelete={() => handleDelete(selectedItem._id)}
@@ -435,7 +438,6 @@ export default function LostFoundHub() {
             />
           </Suspense>
         )}
-
         {showAuth && (
           <Suspense fallback={null}>
             <AuthModal
