@@ -115,11 +115,26 @@ export default function LostFoundHub() {
     image: null,
     imageFile: null,
   });
-  // Removed unused isSubmitting state since it's not used in the UI
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch items from backend on mount
   const fetchItems = useCallback(async () => {
-    // ...
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(api('/api/items'));
+      if (!response.ok) {
+        throw new Error('Failed to fetch items');
+      }
+      const data = await response.json();
+      setItems(data.data || []);
+    } catch (err) {
+      console.error('Error fetching items:', err);
+      setError('Failed to load items. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -345,40 +360,62 @@ export default function LostFoundHub() {
                     } else {
                       setFilter(prev => ({ ...prev, type }));
                     }
-                  }} 
+                  }}
                 />
               </Suspense>
-              <h2 className="text-2xl font-bold mb-4">Browse Items</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {items
-                  .filter(item => 
-                    (filter.type === 'all' || item.type === filter.type) &&
-                    (filter.category === 'all' || item.category === filter.category) &&
-                    (searchTerm === '' || 
-                      item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                      item.description.toLowerCase().includes(searchTerm.toLowerCase()))
-                  )
-                  .map(item => (
-                    <div key={item._id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                      <h3 className="text-lg font-semibold">{item.title}</h3>
-                      <p className="text-gray-600">{item.description}</p>
-                      <div className="mt-2 flex justify-between items-center">
-                        <span className="text-sm text-gray-500">
-                          {item.type === 'lost' ? 'Lost' : 'Found'} • {item.category}
-                        </span>
-                        <button 
-                          onClick={() => setSelectedItem(item)}
-                          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                        >
-                          View Details
-                        </button>
-                      </div>
+
+              {isLoading ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                </div>
+              ) : error ? (
+                <div className="bg-red-50 text-red-700 p-4 rounded-lg">
+                  <p className="font-medium">Error loading items</p>
+                  <p className="text-sm mt-1">{error}</p>
+                  <button 
+                    onClick={fetchItems}
+                    className="mt-2 px-4 py-2 bg-red-100 hover:bg-red-200 rounded-md text-sm"
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+                  {items.length === 0 ? (
+                    <div className="col-span-full text-center py-8 text-gray-500">
+                      No items found. Be the first to post one!
                     </div>
-                  ))}
-              </div>
+                  ) : (
+                    items
+                      .filter(item => 
+                        (filter.type === 'all' || item.type === filter.type) &&
+                        (filter.category === 'all' || item.category === filter.category) &&
+                        (searchTerm === '' || 
+                          item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          item.description.toLowerCase().includes(searchTerm.toLowerCase()))
+                      )
+                      .map(item => (
+                        <div key={item._id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                          <h3 className="text-lg font-semibold">{item.title}</h3>
+                          <p className="text-gray-600">{item.description}</p>
+                          <div className="mt-2 flex justify-between items-center">
+                            <span className="text-sm text-gray-500">
+                              {item.type === 'lost' ? 'Lost' : 'Found'} • {item.category}
+                            </span>
+                            <button 
+                              onClick={() => setSelectedItem(item)}
+                              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                            >
+                              View Details
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                  )}
+                </div>
+              )}
             </div>
-          )}
-          
+          )
           {view === 'post' && (
             <Suspense fallback={<div>Loading form...</div>}>
               <PostForm
@@ -388,13 +425,9 @@ export default function LostFoundHub() {
                 onSubmit={handleSubmit}
               />
             </Suspense>
-          )}
+          )
+          }
         </main>
-
-        {selectedItem && (
-          <Suspense fallback={null}>
-            <ItemModal
-              item={selectedItem}
               onClose={() => setSelectedItem(null)}
               onResolve={() => handleResolve(selectedItem._id)}
               onDelete={() => handleDelete(selectedItem._id)}
