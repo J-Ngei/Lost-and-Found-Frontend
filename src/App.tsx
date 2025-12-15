@@ -130,11 +130,24 @@ export default function LostFoundHub() {
   useEffect(() => {
     try {
       const raw = localStorage.getItem('lf_user');
-      if (raw) {
+      if (raw && raw !== 'undefined') {
         const parsed = JSON.parse(raw);
-        if (parsed?.apiKey && parsed?.userId) setUser(parsed);
+        // Check for both userId and _id for backward compatibility
+        if (parsed?.apiKey && (parsed?.userId || parsed?._id)) {
+          // Ensure we have all required fields with consistent property names
+          setUser({
+            _id: parsed._id || parsed.userId,
+            name: parsed.name || '',
+            email: parsed.email || '',
+            apiKey: parsed.apiKey
+          });
+        }
       }
-    } catch {}
+    } catch (error) {
+      console.error('Error parsing user data from localStorage:', error);
+      // Clear invalid user data
+      localStorage.removeItem('lf_user');
+    }
   }, []);
 
   // Preload components after initial render
