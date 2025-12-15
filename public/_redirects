@@ -1,0 +1,2 @@
+/api/*  https://my-backend.james-nngei.workers.dev/:splat  200
+/*    /index.html   200

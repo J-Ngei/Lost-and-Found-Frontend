@@ -1,11 +1,28 @@
-export const API_BASE = import.meta.env.VITE_API_BASE || '';
+// Ensure we don't have double slashes or duplicate /api in URLs
+const cleanBase = (import.meta.env.VITE_API_BASE || '').replace(/\/+$/, '');
+export const API_BASE = cleanBase;
 
-export const api = (path: string) => `${API_BASE}${path}`;
+export const api = (path: string) => {
+  // Remove leading slashes from path to prevent double slashes
+  const cleanPath = path.replace(/^\/+/, '');
+  // If API_BASE is empty, just return the path
+  if (!API_BASE) return `/${cleanPath}`;
+  // Otherwise, combine them with a single slash
+  return `${API_BASE}/${cleanPath}`;
+};
 
 export const fileUrl = (path?: string | null) => {
   if (!path) return '';
   if (/^https?:\/\//i.test(path)) return path;
-  return `${API_BASE}${path}`;
+  
+  // Remove leading slashes from path to prevent double slashes
+  const cleanPath = path.replace(/^\/+/, '');
+  
+  // If API_BASE is empty, just return the path
+  if (!API_BASE) return `/${cleanPath}`;
+  
+  // Otherwise, combine them with a single slash
+  return `${API_BASE}/${cleanPath}`;
 };
 
 // Helper function for making JSON requests
