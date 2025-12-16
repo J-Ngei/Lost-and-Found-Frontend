@@ -193,5 +193,5 @@ const ItemModal = memo(({ item, onClose, onResolve, onDelete, canManage = false 
       </div>
     </div>
   );
-}
+});
 
