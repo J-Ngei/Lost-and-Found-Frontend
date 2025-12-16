@@ -23,14 +23,15 @@ export const fileUrl = (path?: string | null) => {
   if (!path) return '';
   
   // If it's already a full URL, return as is
-  if (/^https?:\/\//i.test(path)) return path;
+  if (/^https?:\/\//i.test(path)) {
+    return path;
+  }
   
   // Remove leading slashes from path to prevent double slashes
   const cleanPath = path.replace(/^\/+/, '');
   
-  // If the path already starts with /uploads, we might need to handle it specially
-  if (cleanPath.startsWith('uploads/')) {
-    // For uploads, use the full backend URL directly
+  // For uploads, always use the full backend URL directly
+  if (cleanPath.startsWith('uploads/') || cleanPath.startsWith('item-')) {
     return `https://my-backend.james-nngei.workers.dev/${cleanPath}`;
   }
   

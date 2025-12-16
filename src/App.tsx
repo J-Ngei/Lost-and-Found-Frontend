@@ -412,21 +412,13 @@ export default function LostFoundHub() {
                           item.description.toLowerCase().includes(searchTerm.toLowerCase()))
                       )
                       .map(item => (
-                        <div key={item._id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                          <h3 className="text-lg font-semibold">{item.title}</h3>
-                          <p className="text-gray-600">{item.description}</p>
-                          <div className="mt-2 flex justify-between items-center">
-                            <span className="text-sm text-gray-500">
-                              {item.type === 'lost' ? 'Lost' : 'Found'} • {item.category}
-                            </span>
-                            <button 
-                              onClick={() => setSelectedItem(item)}
-                              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                            >
-                              View Details
-                            </button>
-                          </div>
-                        </div>
+                        <ItemCard 
+                          key={item._id || item.id}
+                          item={item}
+                          onClick={setSelectedItem}
+                          onDelete={handleDelete}
+                          currentUserId={user?._id}
+                        />
                       ))
                   )}
                 </div>

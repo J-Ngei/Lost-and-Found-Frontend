@@ -79,17 +79,8 @@ const Header = memo(({ view, setView, user, onSignIn, onSignOut, onRotateKey }: 
                 </div>
                 <div className="flex gap-1 sm:gap-2">
                   <button
-                    onClick={onRotateKey}
-                    className="px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm bg-white border border-gray-300 hover:bg-gray-50 whitespace-nowrap"
-                    title="Generate new API key"
-                    aria-label="Rotate API key"
-                  >
-                    <span className="hidden sm:inline">Rotate Key</span>
-                    <span className="sm:hidden">Key</span>
-                  </button>
-                  <button
                     onClick={onSignOut}
-                    className="px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 whitespace-nowrap"
+                    className="px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 whitespace-nowrap"
                     aria-label="Sign out"
                   >
                     Sign out
