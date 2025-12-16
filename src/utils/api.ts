@@ -21,16 +21,21 @@ export const api = (path: string) => {
 
 export const fileUrl = (path?: string | null) => {
   if (!path) return '';
+  
+  // If it's already a full URL, return as is
   if (/^https?:\/\//i.test(path)) return path;
   
   // Remove leading slashes from path to prevent double slashes
   const cleanPath = path.replace(/^\/+/, '');
   
-  // If API_BASE is empty, just return the path
-  if (!API_BASE) return `/${cleanPath}`;
+  // If the path already starts with /uploads, we might need to handle it specially
+  if (cleanPath.startsWith('uploads/')) {
+    // For uploads, use the full backend URL directly
+    return `https://my-backend.james-nngei.workers.dev/${cleanPath}`;
+  }
   
-  // Otherwise, combine them with a single slash
-  return `${API_BASE}/${cleanPath}`;
+  // For API paths, use the configured API_BASE
+  return API_BASE ? `${API_BASE}/${cleanPath}` : `/${cleanPath}`;
 };
 
 // Helper function for making JSON requests
