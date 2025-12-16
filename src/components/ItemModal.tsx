@@ -5,24 +5,6 @@ import type { Item } from '../types';
 import { getDaysAgo } from '../utils/date';
 import { fileUrl } from '../utils/api';
 
-// Add type declaration for sonner module
-declare module 'sonner' {
-  export interface ToasterProps {
-    position?: 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right';
-    toastOptions?: object;
-  }
-  export const Toaster: React.FC<ToasterProps>;
-  export const toast: {
-    (message: string, options?: object): string | number;
-    success: (message: string, options?: object) => string | number;
-    error: (message: string, options?: object) => string | number;
-    warning: (message: string, options?: object) => string | number;
-    info: (message: string, options?: object) => string | number;
-    loading: (message: string, options?: object) => string | number;
-    dismiss: (toastId?: string | number) => void;
-  };
-}
-
 interface ImageErrorEvent extends React.SyntheticEvent<HTMLImageElement> {
   target: EventTarget & { src: string };
 }
