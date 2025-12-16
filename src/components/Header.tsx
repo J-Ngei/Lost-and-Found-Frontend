@@ -2,13 +2,12 @@ import { memo } from 'react';
 import type { View, User } from '../types';
 
 // Memoize header to prevent unnecessary re-renders
-const Header = memo(({ view, setView, user, onSignIn, onSignOut, onRotateKey }: {
+const Header = memo(({ view, setView, user, onSignIn, onSignOut }: {
   view: View;
   setView: (v: View) => void;
   user?: User | null;
   onSignIn?: () => void;
   onSignOut?: () => void;
-  onRotateKey?: () => void;
 }) => {
   // User avatar initialization removed as it wasn't being used
   

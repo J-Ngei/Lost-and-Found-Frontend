@@ -1,4 +1,5 @@
 export type Item = {
+  _id?: string;
   id: string | number;
   type: 'lost' | 'found';
   category: string;

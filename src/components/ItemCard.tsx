@@ -53,7 +53,7 @@ export default function ItemCard({ item, onClick, onDelete, currentUserId }: Pro
             onClick={(e) => {
               e.stopPropagation();
               if (confirm('Are you sure you want to delete this item?')) {
-                onDelete(item._id || item.id || '');
+                onDelete(item._id || String(item.id) || '');
               }
             }}
             className="absolute bottom-3 right-3 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors"
