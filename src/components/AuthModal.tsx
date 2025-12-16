@@ -12,7 +12,7 @@ type UserData = {
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: (user: UserData) => void;
+  onSuccess?: (user: UserData) => void;
 };
 
 type FormErrors = {
@@ -23,7 +23,7 @@ type FormErrors = {
 
 type AuthMode = 'login' | 'signup';
 
-export default function AuthModal({ isOpen, onClose, onSuccess }: Props) {
+export default function AuthModal({ isOpen, onClose, onSuccess = () => {} }: Props) {
   const [mode, setMode] = useState<AuthMode>('signup');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
