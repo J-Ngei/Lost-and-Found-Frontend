@@ -98,11 +98,9 @@ export default function LostFoundHub() {
   const [items, setItems] = useState<Item[]>([]);
   const [view, setView] = useState<View>('browse');
   const [filter, setFilter] = useState<Filter>({ type: 'all', category: 'all' });
-  const [searchTerm] = useState<string>('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [showAuth, setShowAuth] = useState(false);
-  const [pendingPost, setPendingPost] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     type: 'lost',
     category: '',
@@ -221,8 +219,8 @@ export default function LostFoundHub() {
     
     // Check if user is authenticated
     if (!user) {
-      setPendingPost(true);
-      setShowAuth(true);
+      // Implement login logic here
+      console.log('Login required');
       return;
     }
 
@@ -291,7 +289,26 @@ export default function LostFoundHub() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleItemClick = (item: Item) => {
+    setSelectedItem(item);
+    setIsModalOpen(true);
+  };
+
+  const handlePostClick = () => {
+    setView('post');
+  };
+
+  const handleLoginClick = () => {
+    // Implement login logic here
+    console.log('Login clicked');
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('lf_user');
+  };
+
+  const handleDeleteItem = async (id: string) => {
     if (!user?.apiKey || !confirm('Are you sure you want to delete this item?')) return;
     
     try {
@@ -317,153 +334,168 @@ export default function LostFoundHub() {
     }
   };
 
-  const rotateApiKey = async () => {
-    if (!user?.apiKey) return;
-    
-    if (!confirm('Are you sure you want to rotate your API key? This will invalidate the current key.')) {
-      return;
-    }
-
-    try {
-      const response = await fetch(api(`/api/users/${user._id}/rotate-key`), {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${user.apiKey}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const updatedUser = { ...user, apiKey: data.apiKey };
-        setUser(updatedUser);
-        localStorage.setItem('lf_user', JSON.stringify(updatedUser));
-        alert('API key rotated successfully!');
-      } else {
-        const error = await response.json();
-        alert(error.message || 'Failed to rotate API key');
-      }
-    } catch (error) {
-      console.error('Error rotating API key:', error);
-      alert('Failed to rotate API key. Please try again.');
-    }
-  };
+  const filteredItems = items.filter(item => {
+    const matchesType = filter.type === 'all' || item.type === filter.type;
+    const matchesCategory = filter.category === 'all' || item.category === filter.category;
+    return matchesType && matchesCategory;
+  });
 
   return (
     <ErrorBoundary
       FallbackComponent={ErrorFallback}
       onReset={() => window.location.reload()}
     >
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        <Suspense fallback={<div className="h-24 bg-white shadow-sm"></div>}>
+      <Suspense fallback={<div className="min-h-screen bg-gray-50">Loading...</div>}>
+        <div className="min-h-screen bg-gray-50">
           <Header
-            view={view}
-            setView={(newView: View) => setView(newView)}
             user={user}
-            onSignIn={() => setShowAuth(true)}
-            onSignOut={() => setUser(null)}
-            onRotateKey={rotateApiKey}
+            onLogout={handleLogout}
+            onLoginClick={handleLoginClick}
+            onPostClick={handlePostClick}
           />
-        </Suspense>
-
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {view === 'browse' && (
-            <div className="mt-8">
-              <Suspense fallback={<div>Loading stats...</div>}>
-                <StatsCards 
-                  items={items} 
-                  onSelect={(type: 'active' | 'lost' | 'found') => {
-                    if (type === 'active') {
-                      setFilter(prev => ({ ...prev, type: 'all' }));
-                    } else {
-                      setFilter(prev => ({ ...prev, type }));
-                    }
-                  }}
-                />
-              </Suspense>
-
-              {isLoading ? (
-                <div className="flex justify-center items-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                </div>
-              ) : error ? (
-                <div className="bg-red-50 text-red-700 p-4 rounded-lg">
-                  <p className="font-medium">Error loading items</p>
-                  <p className="text-sm mt-1">{error}</p>
-                  <button 
-                    onClick={fetchItems}
-                    className="mt-2 px-4 py-2 bg-red-100 hover:bg-red-200 rounded-md text-sm"
-                  >
-                    Retry
-                  </button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-                  {items.length === 0 ? (
-                    <div className="col-span-full text-center py-8 text-gray-500">
-                      No items found. Be the first to post one!
+          <main className="container mx-auto px-4 py-8">
+            {view === 'browse' && (
+              <div>
+                <StatsCards items={items} />
+                <div className="mt-8">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      {filter.type === 'all' ? 'All Items' : filter.type === 'lost' ? 'Lost Items' : 'Found Items'}
+                    </h2>
+                    <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                      <select
+                        value={filter.type}
+                        onChange={(e) => setFilter({ ...filter, type: e.target.value as any })}
+                        className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="all">All Types</option>
+                        <option value="lost">Lost Items</option>
+                        <option value="found">Found Items</option>
+                      </select>
+                      <select
+                        value={filter.category}
+                        onChange={(e) => setFilter({ ...filter, category: e.target.value })}
+                        className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="all">All Categories</option>
+                        {categories.map((category) => (
+                          <option key={category} value={category}>
+                            {category}
+                          </option>
+                        ))}
+                      </select>
                     </div>
-                  ) : (
-                    items
-                      .filter(item => 
-                        (filter.type === 'all' || item.type === filter.type) &&
-                        (filter.category === 'all' || item.category === filter.category) &&
-                        (searchTerm === '' || 
-                          item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          item.description.toLowerCase().includes(searchTerm.toLowerCase()))
-                      )
-                      .map(item => (
-                        <ItemCard 
+                  </div>
+                  {isLoading ? (
+                    <div className="flex justify-center items-center h-64">
+                      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                    </div>
+                  ) : error ? (
+                    <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+                      <div className="flex">
+                        <div className="flex-shrink-0">
+                          <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-sm text-red-700">{error}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : filteredItems.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {filteredItems.map((item) => (
+                        <ItemCard
                           key={item._id || item.id}
                           item={item}
-                          onClick={setSelectedItem}
-                          onDelete={handleDelete}
+                          onClick={handleItemClick}
+                          onDelete={handleDeleteItem}
                           currentUserId={user?._id}
                         />
-                      ))
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <svg
+                        className="mx-auto h-12 w-12 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <h3 className="mt-2 text-sm font-medium text-gray-900">No items found</h3>
+                      <p className="mt-1 text-sm text-gray-500">
+                        {filter.type === 'all' ? 'There are no items to display.' : `No ${filter.type} items found.`}
+                      </p>
+                      <div className="mt-6">
+                        <button
+                          type="button"
+                          onClick={handlePostClick}
+                          className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                          <svg
+                            className="-ml-1 mr-2 h-5 w-5"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          Post an Item
+                        </button>
+                      </div>
+                    </div>
                   )}
                 </div>
-              )}
-            </div>
-          )}
-          {view === 'post' && (
-            <Suspense fallback={<div>Loading form...</div>}>
+              </div>
+            )}
+            {view === 'post' && (
               <PostForm
                 formData={formData}
                 setFormData={setFormData}
                 categories={categories}
                 onSubmit={handleSubmit}
               />
-            </Suspense>
-          )}
-        </main>
-        {selectedItem && (
-          <Suspense fallback={null}>
+            )}
+          </main>
+          {isModalOpen && selectedItem && (
             <ItemModal
               item={selectedItem}
-              onClose={() => setSelectedItem(null)}
-              onResolve={() => handleResolve(selectedItem._id)}
-              onDelete={() => handleDelete(selectedItem._id)}
-              canManage={!!user && !!selectedItem.ownerId && String(selectedItem.ownerId) === String(user._id)}
-            />
-          </Suspense>
-        )}
-        {showAuth && (
-          <Suspense fallback={null}>
-            <AuthModal
-              isOpen={showAuth}
-              onClose={() => setShowAuth(false)}
-              onSuccess={(u: User) => {
-                setUser(u);
-                try { localStorage.setItem('lf_user', JSON.stringify(u)); } catch {}
-                if (pendingPost) {
-                  setPendingPost(false);
-                  setView('post');
-                }
+              onClose={() => {
+                setIsModalOpen(false);
+                setSelectedItem(null);
               }}
+              onResolve={() => {
+                handleResolve(selectedItem._id || selectedItem.id || '');
+                setIsModalOpen(false);
+                setSelectedItem(null);
+              }}
+              onDelete={() => {
+                handleDeleteItem(selectedItem._id || selectedItem.id || '');
+                setIsModalOpen(false);
+                setSelectedItem(null);
+              }}
+              canManage={user?._id === selectedItem.ownerId}
             />
-          </Suspense>
-        )}
-      </div>
+          )}
+        </div>
+      </Suspense>
     </ErrorBoundary>
   );
 }
