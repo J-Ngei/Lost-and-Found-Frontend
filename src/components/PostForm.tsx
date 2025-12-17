@@ -195,3 +195,4 @@ export default function PostForm({ formData, setFormData, categories, onSubmit }
     </div>
   );
 }
+ 
